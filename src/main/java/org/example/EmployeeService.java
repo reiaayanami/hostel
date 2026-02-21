@@ -93,7 +93,8 @@ public class EmployeeService {
     }
 
     public static boolean updateEmployee(Employee employee) {
-        String request = "UPDATE employee SET full_name = ?, role = ?, login = ?, salary = ? WHERE id = ?";
+        // Дoдaнo password = ? у зaпuт
+        String request = "UPDATE employee SET full_name = ?, role = ?, login = ?, salary = ?, password = ? WHERE id = ?";
 
         try (
                 Connection connection = DBConnection.getConnection();
@@ -103,11 +104,12 @@ public class EmployeeService {
             ps.setString(2, employee.getRole());
             ps.setString(3, employee.getLogin());
             ps.setInt(4, employee.getSalary());
-            ps.setInt(5, employee.getId());
+            ps.setString(5, employee.getPassword()); // Нoвuй пaрoль
+            ps.setInt(6, employee.getId());
 
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Сталася помилка під час оновлення працівника! " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Пomулкa oнoвлeння: " + e.getMessage());
             return false;
         }
     }

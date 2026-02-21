@@ -147,14 +147,12 @@ public class EmployeesPanel extends JPanel {
     }
 
     private Employee mapEmployeeFromModel(int modelRow) {
-        return new Employee(
-                (int) model.getValueAt(modelRow, 0),
-                (String) model.getValueAt(modelRow, 1),
-                (String) model.getValueAt(modelRow, 2),
-                (int) model.getValueAt(modelRow, 4),
-                (String) model.getValueAt(modelRow, 3),
-                ""
-        );
+        int id = (int) model.getValueAt(modelRow, 0);
+        // Зaпuтуємo пoвнi дaнuх (з пaрoлem) з БД
+        return EmployeeService.getEmployees("").stream()
+                .filter(e -> e.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     private boolean isAdmin() {
