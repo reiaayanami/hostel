@@ -3,45 +3,69 @@ package org.example;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.List;
 
 public class ClientsPanel extends JPanel {
-    private final JTable table;
-    private final DefaultTableModel model;
-    private final JTextField searchField = new JTextField(15);
+    private final JFrame owner;
+    private final Employee currentUser;
+    private DefaultTableModel model;
+    private JTable table;
 
-    public ClientsPanel(JFrame owner) {
-        setLayout(new BorderLayout(8, 8));
+    public ClientsPanel(JFrame owner, Employee user) {
+        this.owner = owner;
+        this.currentUser = user;
+        setLayout(new BorderLayout(10, 10));
 
-        model = new DefaultTableModel(new Object[]{"ID", "ПIБ", "Пaспoрт", "Тeлeфoн", "Email"}, 0);
+        model = new DefaultTableModel(new String[]{"ID", "ПІБ", "Паспорт", "Телефон", "Email"}, 0);
         table = new JTable(model);
+        add(new JScrollPane(table), BorderLayout.CENTER);
 
-        JButton addButton = new JButton("Додaтu клiєнтa");
-        addButton.addActionListener(e -> {
-            ClientDialog dialog = new ClientDialog(owner);
-            dialog.setVisible(true);
-            if (dialog.getResult() != null && ClientService.addClient(dialog.getResult())) {
-                refreshTable();
+        JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton add = new JButton("Додати клієнта");
+        JButton edit = new JButton("Редагувати");
+        JButton delete = new JButton("Видалити");
+
+        UIUtils.styleButton(add); UIUtils.styleButton(edit); UIUtils.styleButton(delete);
+
+        control.add(add); control.add(edit); control.add(delete);
+        add(control, BorderLayout.NORTH);
+
+        add.addActionListener(e -> {
+            ClientDialog d = new ClientDialog(owner, null);
+            if (d.showDialog() == JOptionPane.OK_OPTION) {
+                ClientService.add(d.getClient());
+                refresh();
             }
         });
 
-        searchField.addActionListener(e -> refreshTable());
+        edit.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0) {
+                int id = (int) model.getValueAt(row, 0);
+                Client c = ClientService.getById(id);
+                ClientDialog d = new ClientDialog(owner, c);
+                if (d.showDialog() == JOptionPane.OK_OPTION) {
+                    ClientService.update(d.getClient());
+                    refresh();
+                }
+            }
+        });
 
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        top.add(new JLabel("Пoшук:"));
-        top.add(searchField);
-        top.add(addButton);
+        delete.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0 && JOptionPane.showConfirmDialog(owner, "Видалити клієнта?", "Підтвердження", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                int id = (int) model.getValueAt(row, 0);
+                ClientService.delete(id);
+                refresh();
+            }
+        });
 
-        add(top, BorderLayout.NORTH);
-        add(new JScrollPane(table), BorderLayout.CENTER);
-        refreshTable();
+        refresh();
     }
 
-    private void refreshTable() {
-        List<Client> clients = ClientService.getClients(searchField.getText());
+    private void refresh() {
         model.setRowCount(0);
-        for (Client c : clients) {
-            model.addRow(new Object[]{c.getId(), c.getFullName(), c.getPassportData(), c.getPhone(), c.getEmail()});
+        for (Client c : ClientService.getAll()) {
+            model.addRow(new Object[]{c.getId(), c.getFullName(), c.getPassport(), c.getPhone(), c.getEmail()});
         }
     }
 }

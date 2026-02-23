@@ -1,95 +1,57 @@
 package org.example;
-
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 
+public class LoginPanel extends JPanel {
+    private JTextField loginField = new JTextField(15);
+    private JPasswordField passField = new JPasswordField(15);
+    private JButton btnLogin = new JButton("Увійти");
+    private JButton btnExit = new JButton("Вихід");
 
+    public LoginPanel(MainWindow mainWindow) {
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
 
-public class LoginPanel extends JLabel {
-    public static interface IOnLoginCallBack {
-        void onLogin(Employee employee);
-    }
+        add(new JLabel("Логін:"), gbc); gbc.gridy = 1;
+        add(loginField, gbc); gbc.gridy = 2;
+        add(new JLabel("Пароль:"), gbc); gbc.gridy = 3;
+        add(passField, gbc); gbc.gridy = 4;
 
+        JPanel btnPanel = new JPanel();
+        btnPanel.add(btnLogin);
+        btnPanel.add(btnExit);
+        add(btnPanel, gbc);
 
-    private JLabel loginLabel;
-    private JLabel passwordLabel;
-    private JTextField loginInput;
-    private JTextField passwordInput;
-    private JButton loginButton;
-    private IOnLoginCallBack onLoginCallBack;
+        UIUtils.styleAll(this);
 
-    public LoginPanel(IOnLoginCallBack onLoginCallBack) {
-        loginLabel = new JLabel("Логін");
-        passwordLabel = new JLabel("Пароль");
-        loginInput = new JTextField(15);
-        passwordInput = new JPasswordField(15);
-        loginButton = new JButton("Увійти");
-        this.onLoginCallBack = onLoginCallBack;
+        btnLogin.addActionListener(e -> {
+            String login = loginField.getText().trim();
+            String pass = new String(passField.getPassword());
 
-        setLayout(new FlowLayout());
-
-        add(loginLabel);
-        add(loginInput);
-        add(passwordLabel);
-        add(passwordInput);
-        add(loginButton);
-
-        setInputListeners();
-        setButtonListeners();
-    }
-
-    private void setButtonListeners() {
-        loginButton.addActionListener((ActionEvent e) -> {
-            String login = loginInput.getText();
-            String password = passwordInput.getText();
-            Employee employee = EmployeeService.login(login, password);
-
-            if (employee == null) {
-                JOptionPane.showMessageDialog(this, "Користувача не знайдено. Спробуйте ще раз");
+            Employee emp = EmployeeService.login(login, pass);
+            if (emp != null) {
+                mainWindow.openMainForm(emp);
             } else {
-                this.onLoginCallBack.onLogin(employee);
+                JOptionPane.showMessageDialog(this, "Невірний логін або пароль!", "Помилка", JOptionPane.ERROR_MESSAGE);
             }
         });
-    }
 
-    private void checkButtonState() {
-        String login = loginInput.getText();
-        String password = passwordInput.getText();
+        btnExit.addActionListener(e -> System.exit(0));
 
-        loginButton.setEnabled(
-                !login.isEmpty() &&
-                        !password.isEmpty()
-        );
-    }
-
-    private void setInputListeners() {
-        loginButton.setEnabled(false);
-
-        loginInput.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) { checkButtonState(); }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) { checkButtonState(); }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) { checkButtonState(); }
-        });
-
-        passwordInput.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) { checkButtonState(); }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) { checkButtonState(); }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) { checkButtonState(); }
-        });
-
-
+        // авто-активація кнопки
+        DocumentListener dl = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { check(); }
+            public void removeUpdate(DocumentEvent e) { check(); }
+            public void changedUpdate(DocumentEvent e) { check(); }
+            private void check() {
+                btnLogin.setEnabled(!loginField.getText().trim().isEmpty() && passField.getPassword().length > 0);
+            }
+        };
+        loginField.getDocument().addDocumentListener(dl);
+        passField.getDocument().addDocumentListener(dl);
+        btnLogin.setEnabled(false);
     }
 }

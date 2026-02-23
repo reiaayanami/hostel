@@ -1,31 +1,41 @@
 package org.example;
 
+import java.math.BigDecimal;
+
 public class Room {
-    private int roomNumber;
+    private int number;
     private String type;
     private int totalBeds;
     private int occupiedBeds;
-    private int price;
+    private BigDecimal pricePerDay;
     private String status;
 
-    public Room(int roomNumber, String type, int totalBeds, int occupiedBeds, int price, String status) {
-        this.roomNumber = roomNumber;
+    public Room() {
+    }
+
+    public Room(int number, String type, int totalBeds, int occupiedBeds, BigDecimal pricePerDay, String status) {
+        this.number = number;
         this.type = type;
         this.totalBeds = totalBeds;
         this.occupiedBeds = occupiedBeds;
-        this.price = price;
+        this.pricePerDay = pricePerDay;
         this.status = status;
     }
 
-    @Override
-    public String toString() {
-        return "№" + roomNumber + " (" + price + " грн)";
+    public boolean isFree() {
+        return "Вільно".equals(status) && occupiedBeds < totalBeds;
     }
 
-    public int getRoomNumber() { return roomNumber; }
-    public int getPrice() { return price; }
-    public String getStatus() { return status; }
+    public int getNumber() { return number; }
+    public void setNumber(int number) { this.number = number; }
     public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
     public int getTotalBeds() { return totalBeds; }
+    public void setTotalBeds(int totalBeds) { this.totalBeds = totalBeds; }
     public int getOccupiedBeds() { return occupiedBeds; }
+    public void setOccupiedBeds(int occupiedBeds) { this.occupiedBeds = occupiedBeds; }
+    public BigDecimal getPricePerDay() { return pricePerDay; }
+    public void setPricePerDay(BigDecimal pricePerDay) { this.pricePerDay = pricePerDay; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }
